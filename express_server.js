@@ -27,16 +27,20 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-app.post("/urls", (req, res) => {
+app.post("/urls", (req, res) => { // create new short URL
 let shortURL = generateRandomString();
 urlDatabase[shortURL] = req.body.longURL;
 res.redirect(`/urls/${shortURL}`);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => {
- // console.log(req.params.shortURL)
+app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
 delete urlDatabase[req.params.shortURL];
-res.redirect("/urls");
+res.redirect("/urls"); 
+});
+
+app.post("/urls/:shortURL", (req, res) => { // Update long URL in show a URL page
+  urlDatabase[req.params.shortURL] = req.body.longURL;
+  res.redirect(`/urls/${req.params.shortURL}`);
 });
 
 app.get("/urls", (req, res) => {
