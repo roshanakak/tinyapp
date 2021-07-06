@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/roshanakak/tinyapp/issues"
   },
-  "homepage": "https://github.com/roshanakak/tinyapp#readme"
+  "homepage": "https://github.com/roshanakak/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
 }
