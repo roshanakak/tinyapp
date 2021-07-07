@@ -4,8 +4,8 @@ const ifEmailExists = function(usersData, email) {
       return true;
     }
   }
-  return false; 
-}
+  return false;
+};
 
 const ifPasswordMatches = function(usersData, email, password) {
   for (const user in usersData) {
@@ -13,8 +13,8 @@ const ifPasswordMatches = function(usersData, email, password) {
       return user;
     }
   }
-  return false; 
-}
+  return false;
+};
 
 const generateRandomString = function() {
   let result = '';
@@ -25,6 +25,6 @@ const generateRandomString = function() {
 charactersLength));
   }
   return result;
-}
+};
 
-module.exports = {ifEmailExists, ifPasswordMatches, generateRandomString}
+module.exports = {ifEmailExists, ifPasswordMatches, generateRandomString};
