@@ -16,8 +16,8 @@ app.use(cookieParser());
 app.post("/login", (req, res) => { // saves the user to a cookie
   const userID = ifPasswordMatches(users, req.body.email, req.body.password);
   if (userID) {
-  res.cookie('user_id', userID);
-  res.redirect(`/urls`);
+    res.cookie('user_id', userID);
+    res.redirect(`/urls`);
   } else {
     res.status(403).json({success: false, error: 'The email or password is not correct!'});
   }
@@ -33,12 +33,12 @@ app.post("/register", (req, res) => {
     res.status(400).json({success: false, error: 'The email or password has not been provided!'});
   } else if (ifEmailExists(users, req.body.email)) {
     res.status(400).json({success: false, error: 'The email already exists!'});
-   } else {
+  } else {
     const id = generateRandomString();
     users[id] = {
       id,
       email: req.body.email,
-      password: req.body.password  
+      password: req.body.password
     };
     res.cookie('user_id', id);
     res.redirect(`/urls`);
