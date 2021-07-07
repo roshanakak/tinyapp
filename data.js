@@ -6,7 +6,7 @@ module.exports = {
     },
     i3BoGr: {
       longURL: "https://www.google.ca",
-      userID: "user2RandomID"
+      userID: "userRandomID"
     }
   },
   
@@ -14,12 +14,12 @@ module.exports = {
     "userRandomID": {
       id: "userRandomID",
       email: "user@example.com",
-      password: "purple-monkey-dinosaur"
+      password: "$2b$10$NWKiumaV60bMxunk9bRoi./uQA5qPNrWLZ0BCck0liXi2XhE9Y4dC"// "purple-monkey-dinosaur"
     },
     "user2RandomID": {
       id: "user2RandomID",
       email: "user2@example.com",
-      password: "dishwasher-funk"
+      password: "$2b$10$NWKiumaV60bMxunk9bRoi./uQA5qPNrWLZ0BCck0liXi2XhE9Y4dC"//"dishwasher-funk"
     }
   }
 };

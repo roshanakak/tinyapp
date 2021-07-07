@@ -1,4 +1,8 @@
 const express = require("express");
+const bodyParser = require("body-parser");
+const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
+
 const {ifEmailExists, ifPasswordMatches, generateRandomString, urlsForUser} = require("./helpers");
 const {urlDatabase, users} = require("./data");
 
@@ -6,11 +10,7 @@ const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
-
-const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
-
-const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
 app.post("/login", (req, res) => { // saves the user to a cookie
@@ -25,7 +25,8 @@ app.post("/login", (req, res) => { // saves the user to a cookie
 
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect(`/urls`);
+res.render("emptyPage");
+
 });
 
 app.post("/register", (req, res) => {
@@ -38,7 +39,7 @@ app.post("/register", (req, res) => {
     users[id] = {
       id,
       email: req.body.email,
-      password: req.body.password
+      password: bcrypt.hashSync(req.body.password, 10)
     };
     res.cookie('user_id', id);
     res.redirect(`/urls`);
