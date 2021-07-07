@@ -47,7 +47,10 @@ app.post("/register", (req, res) => {
 
 app.post("/urls", (req, res) => { // create new short URL
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL] = {
+    longURL: req.body.longURL,
+    userID: users[req.cookies["user_id"]]
+  }
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -56,8 +59,11 @@ app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
   res.redirect("/urls");
 });
 
-app.post("/urls/:shortURL", (req, res) => { // Update long URL in show a URL page
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL page
+ urlDatabase[req.params.shortURL] = {
+  longURL: req.body.longURL,
+  userID: users[req.cookies["user_id"]]
+}
   res.redirect(`/urls/${req.params.shortURL}`);
 });
 
@@ -71,35 +77,41 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  if (req.cookies["user_id"]) {  
   const templateVars = {
     user: users[req.cookies["user_id"]]
   };
 
   res.render("urls_new", templateVars);
+} else {
+  res.redirect("/login");
+}
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]],
-    'shortURL': req.params.shortURL, 'longURL': urlDatabase[req.params.shortURL]
+    'shortURL': req.params.shortURL, 'longURL': urlDatabase[req.params.shortURL].longURL
   };
 
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
+  if (!urlDatabase[req.params.shortURL]) {
+    res.status(404).json({success: false, error: 'This short URL does not exist!'});
+  } else {
   const templateVars = {
     user: users[req.cookies["user_id"]]
   };
-
-  res.redirect(urlDatabase[req.params.shortURL]);
+  res.redirect(urlDatabase[req.params.shortURL].longURL);
+}
 });
 
 app.get("/register", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]]
   };
-
   res.render("registrationForm", templateVars);
 });
 
@@ -107,7 +119,6 @@ app.get("/login", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]]
   };
-
   res.render("loginForm", templateVars);
 });
 
