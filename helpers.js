@@ -27,4 +27,14 @@ charactersLength));
   return result;
 };
 
-module.exports = {ifEmailExists, ifPasswordMatches, generateRandomString};
+const urlsForUser = function(data, userID) {
+  const outputData = {};
+  for (const element in data) {
+    if (data[element].userID === userID) {
+      outputData[element] = data[element].longURL;
+    }
+  }
+  return outputData;
+};
+
+module.exports = {ifEmailExists, ifPasswordMatches, generateRandomString, urlsForUser};

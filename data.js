@@ -3,11 +3,11 @@ module.exports = {
     b6UTxQ: {
       longURL: "https://www.tsn.ca",
       userID: "userRandomID"
-  },
-  i3BoGr: {
+    },
+    i3BoGr: {
       longURL: "https://www.google.ca",
       userID: "user2RandomID"
-  }
+    }
   },
   
   users: {

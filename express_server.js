@@ -1,5 +1,5 @@
 const express = require("express");
-const {ifEmailExists, ifPasswordMatches, generateRandomString} = require("./helpers");
+const {ifEmailExists, ifPasswordMatches, generateRandomString, urlsForUser} = require("./helpers");
 const {urlDatabase, users} = require("./data");
 
 const app = express();
@@ -49,63 +49,93 @@ app.post("/urls", (req, res) => { // create new short URL
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
-    userID: users[req.cookies["user_id"]]
-  }
+    userID: users[req.cookies["user_id"]].id
+  };
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls");
+  if (!req.cookies["user_id"]) {
+    res.status(400).json({success: false, error: 'You should register or login first.'});
+  } else {
+    const urls = urlsForUser(urlDatabase, req.cookies["user_id"]);
+    if (!urls[req.params.shortURL]) {
+      res.status(400).json({success: false, error: 'This URL does not belong to you.'});
+    } else {
+      delete urlDatabase[req.params.shortURL];
+      res.redirect("/urls");
+    }
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL page
- urlDatabase[req.params.shortURL] = {
-  longURL: req.body.longURL,
-  userID: users[req.cookies["user_id"]]
-}
-  res.redirect(`/urls/${req.params.shortURL}`);
+
+  if (!req.cookies["user_id"]) {
+    res.status(400).json({success: false, error: 'You should register or login first.'});
+  } else {
+    const urls = urlsForUser(urlDatabase, req.cookies["user_id"]);
+    if (!urls[req.params.shortURL]) {
+      res.status(400).json({success: false, error: 'This URL does not belong to you.'});
+    } else {
+      urlDatabase[req.params.shortURL] = {
+        longURL: req.body.longURL,
+        userID: users[req.cookies["user_id"]].id
+      };
+      res.redirect(`/urls/${req.params.shortURL}`);
+    }
+  }
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]],
-    urls: urlDatabase
-  };
-
-  res.render("urls_index", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.status(400).json({success: false, error: 'You should register or login first.'});
+  } else {
+    const templateVars = {
+      user: users[req.cookies["user_id"]],
+      urls: urlsForUser(urlDatabase, req.cookies["user_id"])
+    };
+    res.render("urls_index", templateVars);
+  }
 });
 
 app.get("/urls/new", (req, res) => {
-  if (req.cookies["user_id"]) {  
-  const templateVars = {
-    user: users[req.cookies["user_id"]]
-  };
+  if (req.cookies["user_id"]) {
+    const templateVars = {
+      user: users[req.cookies["user_id"]]
+    };
 
-  res.render("urls_new", templateVars);
-} else {
-  res.redirect("/login");
-}
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]],
-    'shortURL': req.params.shortURL, 'longURL': urlDatabase[req.params.shortURL].longURL
-  };
-
-  res.render("urls_show", templateVars);
+  if (!req.cookies["user_id"]) {
+    res.status(400).json({success: false, error: 'You should register or login first.'});
+  } else {
+    const urls = urlsForUser(urlDatabase, req.cookies["user_id"]);
+    if (!urls[req.params.shortURL]) {
+      res.status(400).json({success: false, error: 'This URL does not belong to you.'});
+    } else {
+      const templateVars = {
+        user: users[req.cookies["user_id"]],
+        'shortURL': req.params.shortURL, 'longURL': urls[req.params.shortURL]
+      };
+      res.render("urls_show", templateVars);
+    }
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
   if (!urlDatabase[req.params.shortURL]) {
     res.status(404).json({success: false, error: 'This short URL does not exist!'});
   } else {
-  const templateVars = {
-    user: users[req.cookies["user_id"]]
-  };
-  res.redirect(urlDatabase[req.params.shortURL].longURL);
-}
+    const templateVars = {
+      user: users[req.cookies["user_id"]]
+    };
+    res.redirect(urlDatabase[req.params.shortURL].longURL);
+  }
 });
 
 app.get("/register", (req, res) => {
