@@ -13,13 +13,13 @@ app.use(bodyParser.urlencoded({extended: true}));
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-app.post("/login", (req, res) => { // saves the username to a cookie
+app.post("/login", (req, res) => { // saves the user to a cookie
   const userID = ifPasswordMatches(users, req.body.email, req.body.password);
   if (userID) {
   res.cookie('user_id', userID);
   res.redirect(`/urls`);
   } else {
-    res.status(400).json({success: false, error: 'The email or password is not correct!'});
+    res.status(403).json({success: false, error: 'The email or password is not correct!'});
   }
 });
 
