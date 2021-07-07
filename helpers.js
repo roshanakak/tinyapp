@@ -7,6 +7,15 @@ const ifEmailExists = function(usersData, email) {
   return false; 
 }
 
+const ifPasswordMatches = function(usersData, email, password) {
+  for (const user in usersData) {
+    if (email === usersData[user].email && password === usersData[user].password) {
+      return user;
+    }
+  }
+  return false; 
+}
+
 const generateRandomString = function() {
   let result = '';
   let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -18,4 +27,4 @@ charactersLength));
   return result;
 }
 
-module.exports = {ifEmailExists, generateRandomString}
+module.exports = {ifEmailExists, ifPasswordMatches, generateRandomString}
