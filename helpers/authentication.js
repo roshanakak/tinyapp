@@ -5,7 +5,7 @@ const generateAuthenticator = () => {
     if (req.session.user_id || whiteList.includes(req.path)) {
       return next();
     }
-    res.cookie('error', 'Error 400: You should register or login first.');
+    res.cookie('error', 'You should register or login first.');
     res.redirect('/login');
   }
 }

@@ -30,23 +30,24 @@ app.post("/login", (req, res) => { // saves the user to a cookie
     req.session.user_id =  user.id;
     res.redirect(`/urls`);
   } else {
-    res.cookie('error', 'Error 403: The email or password is not correct!');
+    res.cookie('error', 'The email or password is not correct!');
     res.redirect('/login');
   }
 });
 
 app.post("/logout", (req, res) => {
   delete req.session.user_id;
-  res.render("emptyPage");
+  //res.render("emptyPage");
+  res.redirect(`/urls`);
 });
 
 app.post("/register", (req, res) => {
   res.clearCookie('error');
   if (!req.body.password || !req.body.email) {
-    res.cookie('error', 'Error 400: The email or password has not been provided!');
+    res.cookie('error', 'The email or password has not been provided!');
     res.redirect('/register');
   } else if (getUserByEmail(users, req.body.email)) {
-    res.cookie('error', 'Error 400: The email already exists!');
+    res.cookie('error', 'The email already exists!');
     res.redirect('/register');
   } else {
     const id = generateRandomString();
@@ -73,7 +74,7 @@ app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
   res.clearCookie('error');
   const urls = urlsForUser(urlDatabase, req.session.user_id);
   if (!urls[req.params.shortURL]) {
-    res.cookie('error', 'Error 400: This URL does not belong to you.');
+    res.cookie('error', 'This URL does not belong to you.');
     res.redirect('/urls');
   } else {
     delete urlDatabase[req.params.shortURL];
@@ -85,14 +86,14 @@ app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL pa
   res.clearCookie('error');
   const urls = urlsForUser(urlDatabase, req.session.user_id);
   if (!urls[req.params.shortURL]) {
-    res.cookie('error', 'Error 400: This URL does not belong to you.');
+    res.cookie('error', 'This URL does not belong to you.');
     res.redirect('/urls');
   } else {
     urlDatabase[req.params.shortURL] = {
       longURL: req.body.longURL,
       userID: users[req.session.user_id].id
     };
-    res.redirect(`/urls/${req.params.shortURL}`);
+    res.redirect(`/urls`);
   }
 });
 
@@ -118,7 +119,7 @@ app.get("/urls/:shortURL", (req, res) => {
   res.clearCookie('error');
   const urls = urlsForUser(urlDatabase, req.session.user_id);
   if (!urls[req.params.shortURL]) {
-    res.cookie('error', 'Error 400: This URL does not belong to you.');
+    res.cookie('error', 'This URL does not belong to you.');
     res.redirect('/urls');
   } else {
     const templateVars = {
@@ -133,7 +134,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   res.clearCookie('error');
   if (!urlDatabase[req.params.shortURL]) {
-    res.cookie('error', 'Error 404: This short URL does not exist!');
+    res.cookie('error', 'This short URL does not exist!');
     res.redirect('/urls');
   } else {
     res.redirect(urlDatabase[req.params.shortURL].longURL);
@@ -154,6 +155,14 @@ app.get("/login", (req, res) => {
     error: req.cookies.error ? req.cookies.error : null
   };
   res.render("loginForm", templateVars);
+});
+
+app.get("/", (req, res) => {
+  const templateVars = {
+    user: users[req.session.user_id],
+    error: req.cookies.error ? req.cookies.error : null
+  };
+  res.redirect("/urls", templateVars);
 });
 
 app.listen(PORT, () => {
