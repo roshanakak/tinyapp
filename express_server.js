@@ -4,7 +4,8 @@ const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const {getUserByEmail, generateRandomString, urlsForUser, generateAuthenticator} = require("./helpers");
+const {getUserByEmail, generateRandomString, urlsForUser} = require("./helpers");
+const generateAuthenticator = require("./helpers/authentication");
 const {urlDatabase, users} = require("./data");
 
 const app = express();
@@ -19,14 +20,7 @@ app.use(cookieSession({
   maxAge: 1 * 60 * 60 * 1000 // 1 hour
 }));
 
-app.use('/', (req, res, next) => {
-  const whiteList = ['/login']
-  if (req.session.user_id || whiteList.includes(req.path)) {
-    return next();
-  }
-    res.cookie('error', 'Error 400: You should register or login first.');
-  res.redirect('/login');
-});
+app.use('/', generateAuthenticator());
 
 // app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/private', privateRouter)
@@ -39,8 +33,8 @@ app.post("/login", (req, res) => { // saves the user to a cookie
     req.session.user_id =  user.id;
     res.redirect(`/urls`);
   } else {
-  res.cookie('error', 'Error 403: The email or password is not correct!')
-  res.redirect('/login');  
+    res.cookie('error', 'Error 403: The email or password is not correct!');
+    res.redirect('/login');
   }
 });
 
@@ -52,11 +46,11 @@ app.post("/logout", (req, res) => {
 app.post("/register", (req, res) => {
   res.clearCookie('error');
   if (!req.body.password || !req.body.email) {
-    res.cookie('error', 'Error 400: The email or password has not been provided!')
-    res.redirect('/register');  
+    res.cookie('error', 'Error 400: The email or password has not been provided!');
+    res.redirect('/register');
   } else if (getUserByEmail(users, req.body.email)) {
-    res.cookie('error', 'Error 400: The email already exists!')
-    res.redirect('/register');  
+    res.cookie('error', 'Error 400: The email already exists!');
+    res.redirect('/register');
   } else {
     const id = generateRandomString();
     users[id] = {
@@ -80,70 +74,70 @@ app.post("/urls", (req, res) => { // create new short URL
 
 app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
   res.clearCookie('error');
-    const urls = urlsForUser(urlDatabase, req.session.user_id);
-    if (!urls[req.params.shortURL]) {
-      res.cookie('error', 'Error 400: This URL does not belong to you.')
-    res.redirect('/urls');  
-    } else {
-      delete urlDatabase[req.params.shortURL];
-      res.redirect("/urls");
-    }
+  const urls = urlsForUser(urlDatabase, req.session.user_id);
+  if (!urls[req.params.shortURL]) {
+    res.cookie('error', 'Error 400: This URL does not belong to you.');
+    res.redirect('/urls');
+  } else {
+    delete urlDatabase[req.params.shortURL];
+    res.redirect("/urls");
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL page
   res.clearCookie('error');
-    const urls = urlsForUser(urlDatabase, req.session.user_id);
-    if (!urls[req.params.shortURL]) {
-      res.cookie('error', 'Error 400: This URL does not belong to you.')
-    res.redirect('/urls');  
-    } else {
-      urlDatabase[req.params.shortURL] = {
-        longURL: req.body.longURL,
-        userID: users[req.session.user_id].id
-      };
-      res.redirect(`/urls/${req.params.shortURL}`);
-    }
+  const urls = urlsForUser(urlDatabase, req.session.user_id);
+  if (!urls[req.params.shortURL]) {
+    res.cookie('error', 'Error 400: This URL does not belong to you.');
+    res.redirect('/urls');
+  } else {
+    urlDatabase[req.params.shortURL] = {
+      longURL: req.body.longURL,
+      userID: users[req.session.user_id].id
+    };
+    res.redirect(`/urls/${req.params.shortURL}`);
+  }
 });
 
 app.get("/urls", (req, res) => {
   res.clearCookie('error');
-    const templateVars = {
-      user: users[req.session.user_id],
-      urls: urlsForUser(urlDatabase, req.session.user_id),
-      error: req.cookies.error ? req.cookies.error : null
-    };
-    res.render("urls_index", templateVars);
+  const templateVars = {
+    user: users[req.session.user_id],
+    urls: urlsForUser(urlDatabase, req.session.user_id),
+    error: req.cookies.error ? req.cookies.error : null
+  };
+  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-    const templateVars = {
-      user: users[req.session.user_id],
-      error: req.cookies.error ? req.cookies.error : null
-    };
-    res.render("urls_new", templateVars);
+  const templateVars = {
+    user: users[req.session.user_id],
+    error: req.cookies.error ? req.cookies.error : null
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   res.clearCookie('error');
-    const urls = urlsForUser(urlDatabase, req.session.user_id);
-    if (!urls[req.params.shortURL]) {
-      res.cookie('error', 'Error 400: This URL does not belong to you.')
-    res.redirect('/urls');  
-    } else {
-      const templateVars = {
-        user: users[req.session.user_id],
-        'shortURL': req.params.shortURL, 'longURL': urls[req.params.shortURL],
-        error: req.cookies.error ? req.cookies.error : null
-      };
-      res.render("urls_show", templateVars);
-    }
+  const urls = urlsForUser(urlDatabase, req.session.user_id);
+  if (!urls[req.params.shortURL]) {
+    res.cookie('error', 'Error 400: This URL does not belong to you.');
+    res.redirect('/urls');
+  } else {
+    const templateVars = {
+      user: users[req.session.user_id],
+      'shortURL': req.params.shortURL, 'longURL': urls[req.params.shortURL],
+      error: req.cookies.error ? req.cookies.error : null
+    };
+    res.render("urls_show", templateVars);
+  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
   res.clearCookie('error');
   if (!urlDatabase[req.params.shortURL]) {
-    res.cookie('error', 'Error 404: This short URL does not exist!')
-    res.redirect('/urls');  
+    res.cookie('error', 'Error 404: This short URL does not exist!');
+    res.redirect('/urls');
   } else {
     res.redirect(urlDatabase[req.params.shortURL].longURL);
   }
