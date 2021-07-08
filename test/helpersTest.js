@@ -13,9 +13,6 @@ const testUsers = {
     password: "dishwasher-funk"
   }
 };
-
-// const user = getUserByEmail(testUsers, "user@example.com")
-// console.log(user)
     
 describe('getUserByEmail', function() {
   it('should return a user with valid email', function() {
