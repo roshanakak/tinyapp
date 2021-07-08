@@ -19,7 +19,7 @@
       <div class="card-header"></div>
       <div class="card-body">
         <h5 class="card-title">Edit</h5>
-        <form class="form-inline" method="POST" action="/urls/<%= shortURL %>" type="button">
+        <form class="form-inline" method="POST" action="/urls/<%= shortURL %>?_method=PUT" type="button">
           <div class="form-group mb-2" >
             <p class="card-text">New URL:<input class="form-control" type="text" name="longURL" value="<%= longURL %>" style="width: 300px; margin: 1em" ></p>
             <button type="submit" class="btn btn-primary">Submit</button>

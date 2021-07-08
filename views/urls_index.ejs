@@ -28,9 +28,9 @@
                 </form>
             </td>
             <td>
-                <form method="POST" action="/urls/<%= shortURL %>/delete" type="button">
-                  <button type="submit" class="btn btn-primary">Delete</button>
-                </form>
+              <form method="POST" action="/urls/<%= shortURL %>?_method=DELETE" type="button">
+                <button type="submit" class="btn btn-primary">Delete</button>
+              </form>
             </td>
           </tr>
         <% } %>

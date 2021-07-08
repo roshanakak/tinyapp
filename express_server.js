@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 const path = require('path');
+const methodOverride = require('method-override');
 
 const {getUserByEmail, urlsForUser} = require("./helpers/users");
 const generateRandomString = require("./helpers/general");
@@ -23,6 +24,9 @@ app.use(cookieSession({
 }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', generateAuthenticator());
+app.use(methodOverride('_method'));
+
+
 
 app.post("/login", (req, res) => { // saves the user to a cookie
   res.clearCookie('error');
@@ -71,7 +75,7 @@ app.post("/urls", (req, res) => { // create new short URL
   res.redirect(`/urls/${shortURL}`);
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
+app.delete("/urls/:shortURL", (req, res) => { 
   res.clearCookie('error');
   const urls = urlsForUser(urlDatabase, req.session.user_id);
   if (!urls[req.params.shortURL]) {
@@ -83,7 +87,7 @@ app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
   }
 });
 
-app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL page
+app.put("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL page
   res.clearCookie('error');
   const urls = urlsForUser(urlDatabase, req.session.user_id);
   if (!urls[req.params.shortURL]) {
