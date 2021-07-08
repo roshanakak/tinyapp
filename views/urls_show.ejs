@@ -30,6 +30,11 @@
             <button type="submit" class="btn btn-primary">Submit</button>
           </div>
         </form>
+        <% if(error){ %>
+          <strong>
+            <%= error %>
+          </strong>
+          <% } %>
       </div>
     </div>
     <!-- Bootstrap JS -->

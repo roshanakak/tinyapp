@@ -39,6 +39,11 @@
           </tr>
         <% } %>
       </tbody>
+      <% if(error){ %>
+        <strong>
+          <%= error %>
+        </strong>
+        <% } %>
     </table>
   </main>
   <!-- Bootstrap JS -->
