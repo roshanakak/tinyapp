@@ -7,7 +7,7 @@ const generateAuthenticator = () => {
     }
     res.cookie('error', 'You should register or login first.');
     res.redirect('/login');
-  }
-}
+  };
+};
 
 module.exports = generateAuthenticator;
