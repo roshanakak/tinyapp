@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const path = require('path');
 
 const {getUserByEmail, urlsForUser} = require("./helpers/users");
 const generateRandomString = require("./helpers/general");
@@ -20,7 +21,7 @@ app.use(cookieSession({
   keys: ['RandomKey159'],
   maxAge: 1 * 60 * 60 * 1000 // 1 hour
 }));
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', generateAuthenticator());
 
 app.post("/login", (req, res) => { // saves the user to a cookie
