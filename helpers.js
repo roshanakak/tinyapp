@@ -1,23 +1,9 @@
-const bcrypt = require('bcrypt');
-
-const ifEmailExists = function(usersData, email) {
+const getUserByEmail = function(usersData, email) {
   for (const user in usersData) {
     if (email === usersData[user].email) {
-      return true;
+      return usersData[user];
     }
   }
-  return false;
-};
-
-const ifPasswordMatches = function(usersData, email, password) {
-  for (const user in usersData) {
-    if (email === usersData[user].email) {
-      if (bcrypt.compareSync(password, usersData[user].password)) {
-        return user;
-      }
-      return false;
-    }
-  } 
   return false;
 };
 
@@ -42,4 +28,5 @@ const urlsForUser = function(data, userID) {
   return outputData;
 };
 
-module.exports = {ifEmailExists, ifPasswordMatches, generateRandomString, urlsForUser};
+
+module.exports = {getUserByEmail, generateRandomString, urlsForUser};

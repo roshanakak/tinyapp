@@ -4,7 +4,7 @@ const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const {getUserByEmail, generateRandomString, urlsForUser} = require("./helpers");
+const {getUserByEmail, generateRandomString, urlsForUser, generateAuthenticator} = require("./helpers");
 const {urlDatabase, users} = require("./data");
 
 const app = express();
@@ -16,22 +16,17 @@ app.use(cookieParser());
 app.use(cookieSession({
   name: 'session',
   keys: ['RandomKey159'],
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  maxAge: 1 * 60 * 60 * 1000 // 1 hour
 }));
 
-// app.use('/', (req, res, next) => {
-//   const userObject = userDatabaseIsh[req.session.email]
-//   const whiteList = ['/', '/login']
-
-//   console.log(req.path)
-//   if (userObject || whiteList.includes(req.path)) {
-//     return next() // REQUEST COME OUT
-//   }
-//   res.redirect('/')
-// })
-
-
-//app.use('/', generateAuthenticator(userDatabaseIsh))
+app.use('/', (req, res, next) => {
+  const whiteList = ['/login']
+  if (req.session.user_id || whiteList.includes(req.path)) {
+    return next();
+  }
+    res.cookie('error', 'Error 400: You should register or login first.');
+  res.redirect('/login');
+});
 
 // app.use(express.static(path.join(__dirname, 'public')));
 // app.use('/private', privateRouter)
@@ -85,10 +80,6 @@ app.post("/urls", (req, res) => { // create new short URL
 
 app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
   res.clearCookie('error');
-  if (!req.session.user_id) {
-    res.cookie('error', 'Error 400: You should register or login first.')
-    res.redirect('/login');  
-  } else {
     const urls = urlsForUser(urlDatabase, req.session.user_id);
     if (!urls[req.params.shortURL]) {
       res.cookie('error', 'Error 400: This URL does not belong to you.')
@@ -97,15 +88,10 @@ app.post("/urls/:shortURL/delete", (req, res) => { // delete existing URL
       delete urlDatabase[req.params.shortURL];
       res.redirect("/urls");
     }
-  }
 });
 
 app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL page
   res.clearCookie('error');
-  if (!req.session.user_id) {
-    res.cookie('error', 'Error 400: You should register or login first.')
-    res.redirect('/login');  
-  } else {
     const urls = urlsForUser(urlDatabase, req.session.user_id);
     if (!urls[req.params.shortURL]) {
       res.cookie('error', 'Error 400: This URL does not belong to you.')
@@ -117,43 +103,28 @@ app.post("/urls/:shortURL", (req, res) => { // Updates long URL in show a URL pa
       };
       res.redirect(`/urls/${req.params.shortURL}`);
     }
-  }
 });
 
 app.get("/urls", (req, res) => {
   res.clearCookie('error');
-  if (!req.session.user_id) {
-    res.cookie('error', 'Error 400: You should register or login first.')
-    res.redirect('/login');  
-  } else {
     const templateVars = {
       user: users[req.session.user_id],
       urls: urlsForUser(urlDatabase, req.session.user_id),
       error: req.cookies.error ? req.cookies.error : null
     };
     res.render("urls_index", templateVars);
-  }
 });
 
 app.get("/urls/new", (req, res) => {
-  if (req.session.user_id) {
     const templateVars = {
       user: users[req.session.user_id],
       error: req.cookies.error ? req.cookies.error : null
     };
-
     res.render("urls_new", templateVars);
-  } else {
-    res.redirect("/login");
-  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
   res.clearCookie('error');
-  if (!req.session.user_id) {
-    res.cookie('error', 'Error 400: You should register or login first.')
-    res.redirect('/login');  
-  } else {
     const urls = urlsForUser(urlDatabase, req.session.user_id);
     if (!urls[req.params.shortURL]) {
       res.cookie('error', 'Error 400: This URL does not belong to you.')
@@ -166,7 +137,6 @@ app.get("/urls/:shortURL", (req, res) => {
       };
       res.render("urls_show", templateVars);
     }
-  }
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -194,21 +164,6 @@ app.get("/login", (req, res) => {
   };
   res.render("loginForm", templateVars);
 });
-
-
-// app.get("/api/vault", (req, res) => {
-//   const userObject = userDatabaseIsh[req.session.email]
-//   const templateVars = {
-//     name: userObject ? userObject.name : "",
-//     secret: userObject ? userObject.secret : ""
-//   }
-//   if (userObject) {
-//     res.json(templateVars)
-//   } else {
-//     res.redirect("/")
-//   }
-// })
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
