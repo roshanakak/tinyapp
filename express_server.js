@@ -4,7 +4,8 @@ const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
-const {getUserByEmail, generateRandomString, urlsForUser} = require("./helpers");
+const {getUserByEmail, urlsForUser} = require("./helpers/users");
+const generateRandomString = require("./helpers/general");
 const generateAuthenticator = require("./helpers/authentication");
 const {urlDatabase, users} = require("./data");
 
@@ -21,10 +22,6 @@ app.use(cookieSession({
 }));
 
 app.use('/', generateAuthenticator());
-
-// app.use(express.static(path.join(__dirname, 'public')));
-// app.use('/private', privateRouter)
-
 
 app.post("/login", (req, res) => { // saves the user to a cookie
   res.clearCookie('error');
